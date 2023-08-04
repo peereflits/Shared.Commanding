@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Peereflits.Shared.Commanding</AssemblyName>
     <RootNamespace>Peereflits.Shared.Commanding</RootNamespace>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
+    <VersionPrefix>1.0.1</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
     <ApplicationIcon>..\Solution Items\favicon.ico</ApplicationIcon>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,15 +22,16 @@
 
   <PropertyGroup Label="Package">
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageIcon>PackageIcon.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/peereflits/Shared.Commanding.git?path=%2FREADME.md&amp;_a=preview</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/peereflits/Shared.Commanding.git</RepositoryUrl>
-    <Title>Peereflits.Shared.Commanding package</Title>
     <PackageDescription>
 Peereflits.Shared.Commanding is a library for applying CQS.
-This component is a shared infrastructure library of Peereflits.
+This component is a shared library of Peereflits.
     </PackageDescription>
+    <PackageIcon>PackageIcon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/peereflits/Shared.Commanding</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/peereflits/Shared.Commanding</RepositoryUrl>
+    <Title>Peereflits.Shared.Commanding package</Title>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,11 +48,15 @@ This component is a shared infrastructure library of Peereflits.
 
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Content Include="..\Solution Items\PackageIcon.png" Link="Properties\PackageIcon.png" Pack="true" PackagePath="\" />
+    <None Include="..\Solution Items\PackageIcon.png" Link="Properties\PackageIcon.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net7.0' " Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net6.0' " Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'netstandard2.1' " Version="3.1.32" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'netstandard2.0' " Version="2.1.1" />
   </ItemGroup>
 
 </Project>
