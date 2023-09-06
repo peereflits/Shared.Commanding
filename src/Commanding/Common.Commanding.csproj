@@ -4,20 +4,15 @@
     <AssemblyName>Peereflits.Shared.Commanding</AssemblyName>
     <RootNamespace>Peereflits.Shared.Commanding</RootNamespace>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
-    <VersionPrefix>1.0.1</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>..\Solution Items\favicon.ico</ApplicationIcon>
-    <LangVersion>latest</LangVersion>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+
   <PropertyGroup>
-    <Authors>Peereflits</Authors>
-    <Copyright>No Copyright ©, The Netherlands</Copyright>
     <Description>Peereflits.Shared.Commanding is an library for applying CQS.</Description>
-    <Product>Peereflits.Shared.Commanding</Product>
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
@@ -32,18 +27,6 @@ This component is a shared library of Peereflits.
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/peereflits/Shared.Commanding</RepositoryUrl>
     <Title>Peereflits.Shared.Commanding package</Title>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

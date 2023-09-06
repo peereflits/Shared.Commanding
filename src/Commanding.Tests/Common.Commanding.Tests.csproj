@@ -3,19 +3,11 @@
   <PropertyGroup>
     <AssemblyName>Peereflits.Shared.Commanding.Tests</AssemblyName>
     <RootNamespace>Peereflits.Shared.Commanding.Tests</RootNamespace>
-    <TargetFrameworks>netcoreapp3.1;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationIcon>..\Solution Items\favicon.ico</ApplicationIcon>
     <IsPackable>false</IsPackable>
-    <LangVersion>latest</LangVersion>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
