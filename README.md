@@ -231,6 +231,15 @@ internal class CreateCustomerHandler : Command<CreateCustomerRequest>, IHandleCr
 
 <br/><br/>
 
+### Version support
+
+This library supports the following .NET versions:
+1. netstandard2.0
+1. netstandard2.1
+1. .NET 6.0
+1. .NET 7.0
+1. .NET 8.0
+
 ---
 
 <p align="center">

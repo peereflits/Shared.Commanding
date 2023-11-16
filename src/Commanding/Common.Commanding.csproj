@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Peereflits.Shared.Commanding</AssemblyName>
     <RootNamespace>Peereflits.Shared.Commanding</RootNamespace>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0;net7.0;net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -36,10 +36,11 @@ This component is a shared library of Peereflits.
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net8.0' " Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net7.0' " Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net6.0' " Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'netstandard2.1' " Version="3.1.32" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'netstandard2.0' " Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'netstandard2.0' " Version="8.0.0" />
   </ItemGroup>
 
 </Project>
