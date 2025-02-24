@@ -22,6 +22,8 @@ public class TypedLoggedQueryHandlerTest
                    .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TypedTestQueryHandler>>();
+        logger.IsEnabled(Arg.Any<LogLevel>())
+              .Returns(true, true, true);
 
         subject = new TypedTestQueryHandler(testService, logger);
     }
@@ -41,7 +43,7 @@ public class TypedLoggedQueryHandlerTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        await Assert.ThrowsAsync<CommandException>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(() => subject.Execute(invalidRequest));
     }
 
     [Fact]
@@ -59,7 +61,7 @@ public class TypedLoggedQueryHandlerTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
 
         Assert.Null(result);
     }
@@ -80,7 +82,7 @@ public class TypedLoggedQueryHandlerTest
     {
         testService.CanExecute().Returns(Task.FromResult(false));
 
-        await Assert.ThrowsAsync<CommandException>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(() => subject.Execute(new TestRequest { Id = 1 }));
 
         logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x.Contains("TypedTestQueryHandler: cannot handle a TestRequest with")));
     }

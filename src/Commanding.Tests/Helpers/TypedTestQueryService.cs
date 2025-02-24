@@ -3,14 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class TypedTestQueryService : LoggedQueryService<TestRequest, bool>
+internal class TypedTestQueryService(ITestService testService, ILogger<TypedTestQueryService> logger) 
+        : LoggedQueryService<TestRequest, bool>(logger)
 {
-    private readonly ITestService testService;
-
-    public TypedTestQueryService(ITestService testService, ILogger<TypedTestQueryService> logger)
-            : base(logger) => this.testService = testService;
-
-    public override string CommandName => nameof(TypedTestQueryService);
     public override async Task<bool> CanExecute(TestRequest request) => await testService.CanExecute() && request.Id > 0;
     protected override Task<bool> OnExecute(TestRequest request) => testService.ExecuteWithResult<bool>();
 }

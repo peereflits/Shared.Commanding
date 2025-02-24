@@ -22,6 +22,8 @@ public class TypedLoggedCommandHandlerTest
                    .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TypedTestCommandHandler>>();
+        logger.IsEnabled(Arg.Any<LogLevel>())
+              .Returns(true, true, true);
 
         subject = new TypedTestCommandHandler(testService, logger);
     }
@@ -41,7 +43,7 @@ public class TypedLoggedCommandHandlerTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        await Assert.ThrowsAsync<CommandException>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(invalidRequest));
     }
 
     [Fact]
@@ -59,7 +61,7 @@ public class TypedLoggedCommandHandlerTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
 
         Assert.Null(result);
     }
@@ -80,7 +82,7 @@ public class TypedLoggedCommandHandlerTest
     {
         testService.CanExecute().Returns(Task.FromResult(false));
 
-        await Assert.ThrowsAsync<CommandException>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(new TestRequest { Id = 1 }));
 
         logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x.Contains("TypedTestCommandHandler: cannot handle a TestRequest with")));
     }

@@ -22,6 +22,8 @@ public class LoggedCommandHandlerTest
                    .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TestCommandHandler>>();
+        logger.IsEnabled(Arg.Any<LogLevel>())
+              .Returns(true);
 
         subject = new TestCommandHandler(testService, logger);
     }

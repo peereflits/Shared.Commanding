@@ -33,7 +33,7 @@ public class CommandTest
         var invalidRequest = new TestRequest { Id = 0 };
 
         // Assert
-        await Assert.ThrowsAsync<CommandException>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(invalidRequest));
     }
 
     [Fact]

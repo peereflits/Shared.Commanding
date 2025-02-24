@@ -3,15 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class TestLoggedQueryHandler : LoggedQueryHandler<bool>
+internal class TestLoggedQueryHandler(ITestService testService, ILogger<TestLoggedQueryHandler> logger) : LoggedQueryHandler<bool>(logger)
 {
-    private readonly ITestService testService;
-
-    public TestLoggedQueryHandler(ITestService testService, ILogger<TestLoggedQueryHandler> logger)
-            : base(logger) => this.testService=testService;
-
     public override Task<bool> CanExecute() => testService.CanExecute();
 
-    public override string CommandName => nameof(TestLoggedQueryHandler);
     protected override Task<bool> OnExecute() => testService.ExecuteWithResult<bool>();
 }

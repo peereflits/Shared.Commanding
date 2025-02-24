@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using NSubstitute.Extensions;
 using Peereflits.Shared.Commanding.Tests.Helpers;
 using Xunit;
 
@@ -22,6 +23,8 @@ public class LoggedCommandServiceTest
                    .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TestCommandService>>();
+        logger.IsEnabled(Arg.Any<LogLevel>())
+              .Returns(true, true, true);
 
         subject = new TestCommandService(testService, logger);
     }

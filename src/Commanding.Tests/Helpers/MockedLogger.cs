@@ -12,5 +12,7 @@ public abstract class MockedLogger<T> : ILogger<T>
 
     public virtual bool IsEnabled(LogLevel logLevel) => true;
 
-    public abstract IDisposable BeginScope<TState>(TState state) where TState : notnull;
+    IDisposable ILogger.BeginScope<TState>(TState state) => BeginScope(state);
+
+    public abstract IDisposable BeginScope<TState>(TState state);
 }

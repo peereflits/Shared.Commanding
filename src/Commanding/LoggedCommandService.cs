@@ -6,21 +6,28 @@ namespace Peereflits.Shared.Commanding;
 
 public abstract class LoggedCommandService : ICommand
 {
-    protected LoggedCommandService(ILogger<LoggedCommandService> logger) => Logger = logger;
+    private readonly string commandName ;
+
+    protected LoggedCommandService(ILogger<LoggedCommandService> logger)
+    {
+        Logger = logger;
+        commandName = GetType().Name;
+    }
 
     protected ILogger<LoggedCommandService> Logger { get; }
-
-    public abstract string CommandName { get; }
 
     public virtual Task<bool> CanExecute() => Task.FromResult(true);
 
     public async Task Execute()
     {
-        Logger.LogInformation("Executing a {CommandName}", CommandName);
+        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogInformation("Executing a {CommandName}", commandName);
+        }
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot execute a {CommandName}", CommandName);
+            Logger.LogWarning("Cannot execute a {CommandName}", commandName);
             throw new CommandException(this);
         }
 
@@ -28,11 +35,14 @@ public abstract class LoggedCommandService : ICommand
         {
             await OnExecute();
 
-            Logger.LogInformation("Executed a {CommandName}", CommandName);
+            if(Logger.IsEnabled(LogLevel.Information))
+            {
+                Logger.LogInformation("Executed a {CommandName}", commandName);
+            }
         }
         catch(Exception ex)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName}", CommandName);
+            Logger.LogError(ex, "Failed to execute a {CommandName}", commandName);
             throw;
         }
     }
@@ -42,21 +52,28 @@ public abstract class LoggedCommandService : ICommand
 
 public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> where TParameters : IRequest
 {
-    protected LoggedCommandService(ILogger<LoggedCommandService<TParameters>> logger) => Logger = logger;
+    private readonly string commandName ;
+
+    protected LoggedCommandService(ILogger<LoggedCommandService<TParameters>> logger)
+    {
+        Logger = logger;
+        commandName = GetType().Name;
+    }
 
     protected ILogger<LoggedCommandService<TParameters>> Logger { get; }
-
-    public abstract string CommandName { get; }
 
     public abstract Task<bool> CanExecute(TParameters parameters);
 
     public async Task Execute(TParameters parameters)
     {
-        Logger.LogInformation("Executing a {CommandName} with {@Parameters}", CommandName, parameters);
+        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogInformation("Executing a {CommandName} with {@Parameters}", commandName, parameters);
+        }
 
         if(!await CanExecute(parameters))
         {
-            Logger.LogWarning("Cannot execute a {CommandName} with {@Parameters}", CommandName, parameters);
+            Logger.LogWarning("Cannot execute a {CommandName} with {@Parameters}", commandName, parameters);
             OnCommandException(parameters);
         }
 
@@ -64,11 +81,14 @@ public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> 
         {
             await OnExecute(parameters);
 
-            Logger.LogInformation("Executed a {CommandName} with {@Parameters}", CommandName, parameters);
+            if(Logger.IsEnabled(LogLevel.Information))
+            {
+                Logger.LogInformation("Executed a {CommandName} with {@Parameters}", commandName, parameters);
+            }
         }
         catch(Exception ex)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName} with {@Parameters}", CommandName, parameters);
+            Logger.LogError(ex, "Failed to execute a {CommandName} with {@Parameters}", commandName, parameters);
             throw;
         }
     }
@@ -77,6 +97,6 @@ public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> 
 
     protected virtual void OnCommandException(TParameters parameters)
     {
-        throw new CommandException(this);
+        throw new CommandException<TParameters>(this);
     }
 }

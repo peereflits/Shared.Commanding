@@ -43,7 +43,7 @@ public class QueryTest
         Task Act() => subject.Execute(invalidRequest);
 
         // Assert
-        await Assert.ThrowsAsync<CommandException>(Act);
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(Act);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class QueryTest
         // Arrange
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
 
         // Assert
         Assert.Null(result);

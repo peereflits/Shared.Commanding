@@ -6,21 +6,28 @@ namespace Peereflits.Shared.Commanding;
 
 public abstract class LoggedCommandHandler : ICommand
 {
-    protected LoggedCommandHandler(ILogger<LoggedCommandHandler> logger) => Logger = logger;
+    private readonly string commandName;
+
+    protected LoggedCommandHandler(ILogger<LoggedCommandHandler> logger)
+    {
+        Logger = logger;
+        commandName = GetType().Name;
+    }
 
     protected ILogger<LoggedCommandHandler> Logger { get; }
-
-    public abstract string CommandName { get; }
 
     public virtual Task<bool> CanExecute() => Task.FromResult(true);
 
     public async Task Execute()
     {
-        Logger.LogInformation("Handling a {CommandName}", CommandName);
+        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogInformation("Handling a {CommandName}", commandName);
+        }
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot handle a {CommandName}", CommandName);
+            Logger.LogWarning("Cannot handle a {CommandName}", commandName);
             throw new CommandException(this);
         }
 
@@ -28,11 +35,14 @@ public abstract class LoggedCommandHandler : ICommand
         {
             await OnExecute();
 
-            Logger.LogInformation("Handled a {CommandName}", CommandName);
+            if(Logger.IsEnabled(LogLevel.Information))
+            {
+                Logger.LogInformation("Handled a {CommandName}", commandName);
+            }
         }
         catch(Exception ex)
         {
-            Logger.LogError(ex, "Failed to handle a {CommandName}", CommandName);
+            Logger.LogError(ex, "Failed to handle a {CommandName}", commandName);
             throw;
         }
     }
@@ -42,21 +52,28 @@ public abstract class LoggedCommandHandler : ICommand
 
 public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where TRequest : IRequest
 {
-    protected LoggedCommandHandler(ILogger<LoggedCommandHandler<TRequest>> logger) => Logger = logger;
+    private readonly string commandName;
+
+    protected LoggedCommandHandler(ILogger<LoggedCommandHandler<TRequest>> logger)
+    {
+        Logger = logger;
+        commandName = GetType().Name;
+    }
 
     protected ILogger<LoggedCommandHandler<TRequest>> Logger { get; }
-
-    public abstract string CommandName { get; }
 
     public abstract Task<bool> CanExecute(TRequest request);
 
     public async Task Execute(TRequest request)
     {
-        Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", CommandName, typeof(TRequest).Name, request);
+        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        {
+            Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
+        }
 
         if(!await CanExecute(request))
         {
-            Logger.LogWarning("{CommandName}: cannot handle a {RequestType} with {@Request}", CommandName, typeof(TRequest).Name, request);
+            Logger.LogWarning("{CommandName}: cannot handle a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
             OnCommandException(request);
         }
 
@@ -64,11 +81,14 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
         {
             await OnExecute(request);
 
-            Logger.LogInformation("{CommandName}: handled a {RequestType} with {@Request}", CommandName, typeof(TRequest).Name, request);
+            if(Logger.IsEnabled(LogLevel.Information))
+            {
+                Logger.LogInformation("{CommandName}: handled a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
+            }
         }
         catch(Exception ex)
         {
-            Logger.LogError(ex, "{CommandName}: failed to handle a {RequestType} with {@Request}", CommandName, typeof(TRequest).Name, request);
+            Logger.LogError(ex, "{CommandName}: failed to handle a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
             throw;
         }
     }
@@ -77,6 +97,6 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
 
     protected virtual void OnCommandException(TRequest request)
     {
-        throw new CommandException(this);
+        throw new CommandException<TRequest>(this);
     }
 }

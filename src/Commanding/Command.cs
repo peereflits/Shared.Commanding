@@ -2,20 +2,14 @@
 
 namespace Peereflits.Shared.Commanding;
 
-public interface ICommand : IExecutable
+public interface ICommand 
 {
+    Task<bool> CanExecute();
     Task Execute();
-}
-
-public interface ICommand<in TRequest> : IExecutable<TRequest> where TRequest : IRequest
-{
-    Task Execute(TRequest parameters);
 }
 
 public abstract class Command : ICommand
 {
-    public abstract string CommandName { get; }
-
     public virtual Task<bool> CanExecute() => Task.FromResult(true);
 
     public async Task Execute()
@@ -31,11 +25,17 @@ public abstract class Command : ICommand
     protected abstract Task OnExecute();
 }
 
+public interface ICommand<in TRequest> where TRequest : IRequest
+{
+    Task<bool> CanExecute(TRequest request);
+    Task Execute(TRequest parameters);
+}
+
 public abstract class Command<TRequest> : ICommand<TRequest> where TRequest : IRequest
 {
     public abstract string CommandName { get; }
 
-    public abstract Task<bool> CanExecute(TRequest parameters);
+    public virtual Task<bool> CanExecute(TRequest parameters) => Task.FromResult(true);
 
     public async Task Execute(TRequest parameters)
     {
@@ -51,6 +51,6 @@ public abstract class Command<TRequest> : ICommand<TRequest> where TRequest : IR
 
     protected virtual void OnCommandException(TRequest parameters)
     {
-        throw new CommandException(this);
+        throw new CommandException<TRequest>(this);
     }
 }

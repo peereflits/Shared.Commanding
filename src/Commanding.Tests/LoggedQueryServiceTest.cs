@@ -24,6 +24,8 @@ public class LoggedQueryServiceTest
                    .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TestLoggedQueryService>>();
+        logger.IsEnabled(Arg.Any<LogLevel>())
+              .Returns(true, true, true);
 
         subject = new TestLoggedQueryService(testService, logger);
     }
@@ -41,7 +43,7 @@ public class LoggedQueryServiceTest
         testService.CanExecute()
                    .Returns(Task.FromResult(false));
 
-        _ = await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
+        _ = await Assert.ThrowsAsync<QueryException<bool>>(() => subject.Execute());
     }
 
     [Fact]
@@ -59,7 +61,7 @@ public class LoggedQueryServiceTest
         testService.CanExecute()
                    .Returns(Task.FromResult(false));
 
-        _ = await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
+        _ = await Assert.ThrowsAsync<QueryException<bool>>(() => subject.Execute());
 
         logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x => x == "Cannot execute a TestLoggedQueryService"));
     }
