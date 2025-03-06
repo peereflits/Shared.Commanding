@@ -62,7 +62,7 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
 
     protected ILogger<LoggedCommandHandler<TRequest>> Logger { get; }
 
-    public abstract Task<bool> CanExecute(TRequest request);
+    public virtual Task<bool> CanExecute(TRequest request) => Task.FromResult(true);
 
     public async Task Execute(TRequest request)
     {

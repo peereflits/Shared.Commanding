@@ -62,7 +62,7 @@ public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> 
 
     protected ILogger<LoggedCommandService<TParameters>> Logger { get; }
 
-    public abstract Task<bool> CanExecute(TParameters parameters);
+    public virtual Task<bool> CanExecute(TParameters parameters) => Task.FromResult(true);
 
     public async Task Execute(TParameters parameters)
     {

@@ -70,8 +70,7 @@ public abstract class LoggedQueryService<TParameters, TResult>
 
     protected ILogger<LoggedQueryService<TParameters, TResult>> Logger { get; }
 
-
-    public abstract Task<bool> CanExecute(TParameters parameters);
+    public virtual Task<bool> CanExecute(TParameters parameters) => Task.FromResult(true);
 
     public async Task<TResult> Execute(TParameters parameters)
     {
