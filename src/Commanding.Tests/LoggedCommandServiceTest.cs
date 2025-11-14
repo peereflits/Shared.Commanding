@@ -10,20 +10,22 @@ namespace Peereflits.Shared.Commanding.Tests;
 
 public class LoggedCommandServiceTest
 {
-    private readonly ITestService testService;
     private readonly MockedLogger<TestCommandService> logger;
 
     private readonly TestCommandService subject;
+    private readonly ITestService testService;
 
     public LoggedCommandServiceTest()
     {
         testService = Substitute.For<ITestService>();
-        testService.CanExecute()
-                   .Returns(Task.FromResult(true));
+        testService
+               .CanExecute()
+               .Returns(true);
 
         logger = Substitute.For<MockedLogger<TestCommandService>>();
-        logger.IsEnabled(Arg.Any<LogLevel>())
-              .Returns(true, true, true);
+        logger
+               .IsEnabled(Arg.Any<LogLevel>())
+               .Returns(true, true, true);
 
         subject = new TestCommandService(testService, logger);
     }
@@ -31,7 +33,9 @@ public class LoggedCommandServiceTest
     [Fact]
     public async Task WhenCanNotExecuteRequest_ItShouldThrow()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService
+               .CanExecute()
+               .Returns(false);
 
         await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
     }
@@ -43,35 +47,50 @@ public class LoggedCommandServiceTest
 
         Assert.Null(result);
     }
-        
+
     [Fact]
     public async Task WhenExecute_ItShouldLog()
     {
-        testService.Execute().Returns(Task.CompletedTask);
+        testService
+               .Execute()
+               .Returns(Task.CompletedTask);
 
-        await  subject.Execute();
+        await subject.Execute();
 
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x == "Executing a TestCommandService"));
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x == "Executed a TestCommandService"));
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x == "Executing a TestCommandService"));
+
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x == "Executed a TestCommandService"));
     }
 
     [Fact]
     public async Task WhenCannotExecute_ItShouldLog()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService
+               .CanExecute()
+               .Returns(false);
 
         await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
 
-        logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x == "Cannot execute a TestCommandService"));
+        logger
+               .Received()
+               .Log(LogLevel.Warning, Arg.Is<string>(x => x == "Cannot execute a TestCommandService"));
     }
 
     [Fact]
     public async Task WhenExecuteFails_ItShouldLogError()
     {
-        testService.Execute().Throws(new AggregateException());
+        testService
+               .Execute()
+               .Throws(new AggregateException());
 
         await Assert.ThrowsAsync<AggregateException>(() => subject.Execute());
 
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(x=> x.Contains("Failed to execute a TestCommandService")));
+        logger
+               .Received()
+               .Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("Failed to execute a TestCommandService")));
     }
 }

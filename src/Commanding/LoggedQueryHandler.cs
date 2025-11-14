@@ -16,11 +16,11 @@ public abstract class LoggedQueryHandler<TResponse> : IQuery<TResponse>
 
     protected ILogger<LoggedQueryHandler<TResponse>> Logger { get; }
 
-    public virtual Task<bool> CanExecute() => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute() => new(true);
 
     public async Task<TResponse> Execute()
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Handling a {CommandName}", queryName);
         }
@@ -69,11 +69,11 @@ public abstract class LoggedQueryHandler<TRequest, TResponse> : IQuery<TRequest,
 
     protected ILogger<LoggedQueryHandler<TRequest, TResponse>> Logger { get; }
 
-    public virtual Task<bool> CanExecute(TRequest request) => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute(TRequest request) => new(true);
 
     public async Task<TResponse> Execute(TRequest request)
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", queryName, typeof(TRequest).Name, request);
         }

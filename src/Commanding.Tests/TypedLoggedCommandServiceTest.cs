@@ -10,20 +10,22 @@ namespace Peereflits.Shared.Commanding.Tests;
 
 public class TypedLoggedCommandServiceTest
 {
-    private readonly ITestService testService;
     private readonly MockedLogger<TypedTestCommandService> logger;
 
     private readonly TypedTestCommandService subject;
+    private readonly ITestService testService;
 
     public TypedLoggedCommandServiceTest()
     {
         testService = Substitute.For<ITestService>();
-        testService.CanExecute()
-                   .Returns(Task.FromResult(true));
+        testService
+               .CanExecute()
+               .Returns(true);
 
         logger = Substitute.For<MockedLogger<TypedTestCommandService>>();
-        logger.IsEnabled(Arg.Any<LogLevel>())
-              .Returns(true, true, true);
+        logger
+               .IsEnabled(Arg.Any<LogLevel>())
+               .Returns(true, true, true);
 
         subject = new TypedTestCommandService(testService, logger);
     }
@@ -65,35 +67,50 @@ public class TypedLoggedCommandServiceTest
 
         Assert.Null(result);
     }
-        
+
     [Fact]
     public async Task WhenExecute_ItShouldLog()
     {
-        testService.Execute().Returns(Task.CompletedTask);
+        testService
+               .Execute()
+               .Returns(Task.CompletedTask);
 
-        await  subject.Execute(new TestRequest { Id = 1 });
+        await subject.Execute(new TestRequest { Id = 1 });
 
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x.Contains("Executing a TypedTestCommandService with")));
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x.Contains("Executed a TypedTestCommandService with")));
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executing a TypedTestCommandService with")));
+
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executed a TypedTestCommandService with")));
     }
 
     [Fact]
     public async Task WhenCannotExecute_ItShouldLog()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService
+               .CanExecute()
+               .Returns(false);
 
         await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(new TestRequest { Id = 1 }));
 
-        logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x.Contains("Cannot execute a TypedTestCommandService with")));
+        logger
+               .Received()
+               .Log(LogLevel.Warning, Arg.Is<string>(x => x.Contains("Cannot execute a TypedTestCommandService with")));
     }
 
     [Fact]
     public async Task WhenExecuteFails_ItShouldLogError()
     {
-        testService.Execute().Throws(new AggregateException());
+        testService
+               .Execute()
+               .Throws(new AggregateException());
 
         await Assert.ThrowsAsync<AggregateException>(() => subject.Execute(new TestRequest { Id = 1 }));
 
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(x=> x.Contains("Failed to execute a TypedTestCommandService with")));
+        logger
+               .Received()
+               .Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("Failed to execute a TypedTestCommandService with")));
     }
 }

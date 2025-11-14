@@ -10,7 +10,9 @@ The library only contains abstract classes and interfaces. By inheriting these `
 
 ## Command pattern
 
-The generally recognized definition of the *command pattern* states that a command contains all the data it needs to perform an action. "All data" consists of the (execution) context and the "state" in the command itself. This corresponds to what is stated in some coding guidelines: [Classes should have state and behavior](https://csharpcodingguidelines.com//class-design-guidelines/#AV1025). But that then seems to contradict the "cloud native" adage "services should be stateless". You often see in *command pattern* implementations that a command has an `Execute()` method. In this implementation it was decided to make the execution context available in a command via Dependency Injection and to pass the "state" as a parameter to `Execute()`. This makes "statefulness" easier to prevent. Furthermore, a command, in this implementation, also has a `CanExecute()`, so that you can naturally keep validation logic and execution logic separate from each other. See this (speudo) code:
+The generally recognized definition of the *[command pattern](https://books.google.nl/books/about/Design_Patterns.html?id=6oHuKQe3TjQC)* states that a command contains all the data it needs to perform an action. "All data" consists of the (execution) context and the "state" in the command itself. This corresponds to what is stated in some coding guidelines: [Classes should have state and behavior](https://csharpcodingguidelines.com//class-design-guidelines/#AV1025). But that then seems to contradict the "cloud native" adage "services should be stateless". 
+
+You often see in *command pattern* implementations that a command has an `Execute()` method. In this implementation it was decided to make the execution context available in a command via Dependency Injection and to pass the "state" as a parameter to `Execute()`. This makes "statefulness" easier to prevent. Furthermore, a command, in this implementation, also has a `CanExecute()`, so that you can naturally keep validation logic and execution logic separate from each other. See this (speudo) code:
 
 ``` csharp
 interface ICommand
@@ -20,7 +22,8 @@ interface ICommand
 }
 ```
 
-The validation logic in `CanExecute` performs context validation (on the injected services) and input validation on the `parameters`. The execution logic calls `CanExecute` and if it passes the command is executed.
+The validation logic in `CanExecute` performs context validation (on the injected services) and input validation on the `parameters`. The execution logic calls `CanExecute` and if it passes the command is executed. 
+This approach is also used on several places in [dotnet](https://learn.microsoft.com/en-us/dotnet/api/system.windows.input.icommand).
 
 
 ## Command/Query separation
@@ -31,7 +34,7 @@ The value of the Command/Query separation (CQS) principle is well known and is s
 
 > **Note:** This is *not* the [CQRS pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs) | [Martin Fowler](https://www.martinfowler.com/bliki/CQRS.html)
 
-This library contains a number of `abstract classes` that realize this principle/pattern by implementing the following `interfaces` (=pseudo code):
+This library contains a number of `abstract classes` that realize this principle/pattern by implementing the following `interfaces` (note this is pseudo code):
 
 ``` csharp
 public interface ICommand 
@@ -118,14 +121,12 @@ Schematically, the relationship between commands, queries, services and handlers
 An example of a parameterless query service:
 
 ``` csharp
-internal interface IQueryGetAllCustomers : IQuery<IEnumerable<Customer>> { }
+internal interface IGetAllCustomers : IQuery<IEnumerable<Customer>> { }
 
-internal class GetAllCustomersQuery : LoggedQueryService<IEnumerable<Customer>>, IQueryGetAllCustomers
+internal sealed class AllCustomersGetter : LoggedQueryService<IEnumerable<Customer>>, IGetAllCustomers
 {
     ...
     
-    public override string CommandName => nameof(GetAllCustomersQuery);
-
     public override async Task<IEnumerable<Customer>> OnExecute() 
     {
         // Implementation of the query
@@ -138,20 +139,18 @@ internal class GetAllCustomersQuery : LoggedQueryService<IEnumerable<Customer>>,
 An example of a parameterized service query:
 
 ``` csharp
-public class GetCustomerParameters : IRequest
+public record GetCustomerParameters : IRequest
 {
     // All properties are parameters of the query
 }
 
-internal interface IQueryGetCustomer : IQuery<GetCustomerParameters, Customer> { }
+internal interface IGetCustomer : IQuery<GetCustomerParameters, Customer> { }
 
-internal class GetCustomerQuery : LoggedQueryService<GetCustomerParameters, Customer>, IHandleGetCustomer
+internal class CustomerGetter : LoggedQueryService<GetCustomerParameters, Customer>, IHandleGetCustomer
 {
     ...
 
-    public override string CommandName => nameof(GetCustomerQuery);
-
-    public override async Task<bool> CanExecute(GetCustomerParameters parameters) 
+    public override async ValueTask<bool> CanExecute(GetCustomerParameters parameters) 
     {
         // Validate parameters and return true if valid.
     }    
@@ -163,7 +162,7 @@ internal class GetCustomerQuery : LoggedQueryService<GetCustomerParameters, Cust
 }
 ```
 
-Note that `Customer` is the result of the query and `GetCustomerParameters` is a DTO/POCO containing all the inputs (such as ID) needed to run the query.
+Note that `Customer` is the result of the query and `GetCustomerParameters` is a DTO/POCO/`record` containing all the inputs (such as ID) needed to run the query.
 
 An example of a parameterized command as a handler:
 
@@ -188,8 +187,6 @@ internal class CreateCustomerHandler : Command<CreateCustomerRequest>, IHandleCr
     {
       ...        
     }
-
-    public override string CommandName => nameof(CreateCustomerHandler);
 
     public override async Task<bool> CanExecute(CreateCustomerRequest request)
            => return await getCustomerQuery.CanExecute(new GetCustomerParameters(...))
@@ -228,8 +225,6 @@ internal class CreateCustomerHandler : Command<CreateCustomerRequest>, IHandleCr
     }
 }
 ```
-
-<br/><br/>
 
 ### Version support
 

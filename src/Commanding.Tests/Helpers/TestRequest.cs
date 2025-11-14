@@ -1,6 +1,6 @@
 ﻿namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class TestRequest : IRequest
+internal record TestRequest : IRequest
 {
-    public int Id { get; set; }
+    public int Id { get; init; }
 }

@@ -10,20 +10,22 @@ namespace Peereflits.Shared.Commanding.Tests;
 
 public class TypedLoggedQueryHandlerTest
 {
-    private readonly ITestService testService;
     private readonly MockedLogger<TypedTestQueryHandler> logger;
 
     private readonly TypedTestQueryHandler subject;
+    private readonly ITestService testService;
 
     public TypedLoggedQueryHandlerTest()
     {
         testService = Substitute.For<ITestService>();
-        testService.CanExecute()
-                   .Returns(Task.FromResult(true));
+        testService
+               .CanExecute()
+               .Returns(true);
 
         logger = Substitute.For<MockedLogger<TypedTestQueryHandler>>();
-        logger.IsEnabled(Arg.Any<LogLevel>())
-              .Returns(true, true, true);
+        logger
+               .IsEnabled(Arg.Any<LogLevel>())
+               .Returns(true, true, true);
 
         subject = new TypedTestQueryHandler(testService, logger);
     }
@@ -65,35 +67,50 @@ public class TypedLoggedQueryHandlerTest
 
         Assert.Null(result);
     }
-        
+
     [Fact]
     public async Task WhenExecute_ItShouldLog()
     {
-        testService.Execute().Returns(Task.CompletedTask);
+        testService
+               .Execute()
+               .Returns(Task.CompletedTask);
 
-        await  subject.Execute(new TestRequest { Id = 1 });
+        await subject.Execute(new TestRequest { Id = 1 });
 
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x.Contains("TypedTestQueryHandler: handling a TestRequest with")));
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x.Contains("TypedTestQueryHandler: handled a TestRequest with")));
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("TypedTestQueryHandler: handling a TestRequest with")));
+
+        logger
+               .Received()
+               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("TypedTestQueryHandler: handled a TestRequest with")));
     }
 
     [Fact]
     public async Task WhenCannotExecute_ItShouldLog()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService
+               .CanExecute()
+               .Returns(false);
 
         await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(() => subject.Execute(new TestRequest { Id = 1 }));
 
-        logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x.Contains("TypedTestQueryHandler: cannot handle a TestRequest with")));
+        logger
+               .Received()
+               .Log(LogLevel.Warning, Arg.Is<string>(x => x.Contains("TypedTestQueryHandler: cannot handle a TestRequest with")));
     }
 
     [Fact]
     public async Task WhenExecuteFails_ItShouldLogError()
     {
-        testService.ExecuteWithResult<bool>().Throws(new AggregateException());
+        testService
+               .ExecuteWithResult<bool>()
+               .Throws(new AggregateException());
 
         await Assert.ThrowsAsync<AggregateException>(() => subject.Execute(new TestRequest { Id = 1 }));
 
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(x=> x.Contains("TypedTestQueryHandler: failed to handle a TestRequest with")));
+        logger
+               .Received()
+               .Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("TypedTestQueryHandler: failed to handle a TestRequest with")));
     }
 }

@@ -4,13 +4,13 @@ namespace Peereflits.Shared.Commanding;
 
 public interface IQuery<TResponse> 
 {
-    Task<bool> CanExecute();
+    ValueTask<bool> CanExecute();
     Task<TResponse> Execute();
 }
 
 public abstract class Query<TResponse> : IQuery<TResponse>
 {
-    public virtual Task<bool> CanExecute() => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute() => new(true);
 
     public async Task<TResponse> Execute()
     {
@@ -32,15 +32,13 @@ public abstract class Query<TResponse> : IQuery<TResponse>
 
 public interface IQuery<in TRequest, TResponse> where TRequest : IRequest
 {
-    Task<bool> CanExecute(TRequest request);
+    ValueTask<bool> CanExecute(TRequest request);
     Task<TResponse> Execute(TRequest parameters);
 }
 
 public abstract class Query<TRequest, TResponse> : IQuery<TRequest, TResponse> where TRequest : IRequest
 {
-    public abstract string CommandName { get; }
-
-    public virtual Task<bool> CanExecute(TRequest parameters) => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute(TRequest parameters) => new(true);
 
     public async Task<TResponse> Execute(TRequest parameters)
     {

@@ -16,11 +16,11 @@ public abstract class LoggedCommandService : ICommand
 
     protected ILogger<LoggedCommandService> Logger { get; }
 
-    public virtual Task<bool> CanExecute() => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute() => new(true);
 
     public async Task Execute()
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Executing a {CommandName}", commandName);
         }
@@ -62,11 +62,11 @@ public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> 
 
     protected ILogger<LoggedCommandService<TParameters>> Logger { get; }
 
-    public virtual Task<bool> CanExecute(TParameters parameters) => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(true);
 
     public async Task Execute(TParameters parameters)
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Executing a {CommandName} with {@Parameters}", commandName, parameters);
         }

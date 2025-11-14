@@ -16,11 +16,11 @@ public abstract class LoggedQueryService<TResult> : IQuery<TResult>
 
     protected ILogger<LoggedQueryService<TResult>> Logger { get; }
 
-    public virtual Task<bool> CanExecute() => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute() => new(true);
 
     public async Task<TResult> Execute()
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Executing a {CommandName}", queryName);
         }
@@ -70,11 +70,11 @@ public abstract class LoggedQueryService<TParameters, TResult>
 
     protected ILogger<LoggedQueryService<TParameters, TResult>> Logger { get; }
 
-    public virtual Task<bool> CanExecute(TParameters parameters) => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(true);
 
     public async Task<TResult> Execute(TParameters parameters)
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Executing a {CommandName} with {@Parameters}", queryName, parameters);
         }

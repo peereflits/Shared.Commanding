@@ -5,7 +5,7 @@ namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
 internal class TestLoggedQueryHandler(ITestService testService, ILogger<TestLoggedQueryHandler> logger) : LoggedQueryHandler<bool>(logger)
 {
-    public override Task<bool> CanExecute() => testService.CanExecute();
+    public override ValueTask<bool> CanExecute() => testService.CanExecute();
 
     protected override Task<bool> OnExecute() => testService.ExecuteWithResult<bool>();
 }

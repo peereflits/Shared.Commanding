@@ -5,6 +5,6 @@ namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
 internal class TestCommandHandler(ITestService testService, ILogger<TestCommandHandler> logger) : LoggedCommandHandler(logger)
 {
-    public override Task<bool> CanExecute() => testService.CanExecute();
+    public override ValueTask<bool> CanExecute() => testService.CanExecute();
     protected override Task OnExecute() => testService.Execute();
 }

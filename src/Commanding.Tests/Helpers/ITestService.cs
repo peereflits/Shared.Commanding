@@ -4,7 +4,7 @@ namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
 internal interface ITestService
 {
-    Task<bool> CanExecute();  
+    ValueTask<bool> CanExecute();  
     Task Execute();
     Task<T> ExecuteWithResult<T>();
 }

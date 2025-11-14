@@ -14,7 +14,6 @@ public class QueryTest
     {
         Query<bool> subject1 = new ParameterlessTestQuery();
 
-        // Act
         bool result = await subject1.Execute();
 
         Assert.True(result);

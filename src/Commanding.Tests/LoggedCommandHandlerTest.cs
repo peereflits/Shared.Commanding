@@ -20,7 +20,7 @@ public class LoggedCommandHandlerTest
         testService = Substitute.For<ITestService>();
         testService
                .CanExecute()
-               .Returns(Task.FromResult(true));
+               .Returns(new ValueTask<bool>(true));
 
         logger = Substitute.For<MockedLogger<TestCommandHandler>>();
         logger
@@ -33,7 +33,7 @@ public class LoggedCommandHandlerTest
     [Fact]
     public async Task WhenCanNotExecuteRequest_ItShouldThrow()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService.CanExecute().Returns(new ValueTask<bool>(false));
 
         await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
     }
@@ -60,7 +60,7 @@ public class LoggedCommandHandlerTest
     [Fact]
     public async Task WhenCannotExecute_ItShouldLog()
     {
-        testService.CanExecute().Returns(Task.FromResult(false));
+        testService.CanExecute().Returns(new ValueTask<bool>(false));
 
         await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
 

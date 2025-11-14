@@ -16,11 +16,11 @@ public abstract class LoggedCommandHandler : ICommand
 
     protected ILogger<LoggedCommandHandler> Logger { get; }
 
-    public virtual Task<bool> CanExecute() => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute() => new ValueTask<bool>(true);
 
     public async Task Execute()
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("Handling a {CommandName}", commandName);
         }
@@ -62,11 +62,11 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
 
     protected ILogger<LoggedCommandHandler<TRequest>> Logger { get; }
 
-    public virtual Task<bool> CanExecute(TRequest request) => Task.FromResult(true);
+    public virtual ValueTask<bool> CanExecute(TRequest request) => new ValueTask<bool>(true);
 
     public async Task Execute(TRequest request)
     {
-        if(Logger.IsEnabled(LogLevel.Debug) || Logger.IsEnabled(LogLevel.Trace))
+        if (Logger.IsEnabled(LogLevel.Information))
         {
             Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
         }
