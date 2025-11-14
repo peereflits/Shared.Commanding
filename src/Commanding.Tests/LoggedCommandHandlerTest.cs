@@ -10,20 +10,22 @@ namespace Peereflits.Shared.Commanding.Tests;
 
 public class LoggedCommandHandlerTest
 {
-    private readonly ITestService testService;
     private readonly MockedLogger<TestCommandHandler> logger;
 
     private readonly TestCommandHandler subject;
+    private readonly ITestService testService;
 
     public LoggedCommandHandlerTest()
     {
         testService = Substitute.For<ITestService>();
-        testService.CanExecute()
-                   .Returns(Task.FromResult(true));
+        testService
+               .CanExecute()
+               .Returns(Task.FromResult(true));
 
         logger = Substitute.For<MockedLogger<TestCommandHandler>>();
-        logger.IsEnabled(Arg.Any<LogLevel>())
-              .Returns(true);
+        logger
+               .IsEnabled(Arg.Any<LogLevel>())
+               .Returns(true);
 
         subject = new TestCommandHandler(testService, logger);
     }
@@ -39,20 +41,20 @@ public class LoggedCommandHandlerTest
     [Fact]
     public async Task WhenCanExecuteRequest_ItShouldNotThrow()
     {
-        Exception result = await Record.ExceptionAsync(() => subject.Execute());
+        Exception? result = await Record.ExceptionAsync(() => subject.Execute());
 
         Assert.Null(result);
     }
-        
+
     [Fact]
     public async Task WhenExecute_ItShouldLog()
     {
         testService.Execute().Returns(Task.CompletedTask);
 
-        await  subject.Execute();
+        await subject.Execute();
 
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x == "Handling a TestCommandHandler"));
-        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x=> x == "Handled a TestCommandHandler"));
+        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x => x == "Handling a TestCommandHandler"));
+        logger.Received().Log(LogLevel.Information, Arg.Is<string>(x => x == "Handled a TestCommandHandler"));
     }
 
     [Fact]
@@ -62,7 +64,7 @@ public class LoggedCommandHandlerTest
 
         await Assert.ThrowsAsync<CommandException>(() => subject.Execute());
 
-        logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x=> x == "Cannot handle a TestCommandHandler"));
+        logger.Received().Log(LogLevel.Warning, Arg.Is<string>(x => x == "Cannot handle a TestCommandHandler"));
     }
 
     [Fact]
@@ -72,6 +74,6 @@ public class LoggedCommandHandlerTest
 
         await Assert.ThrowsAsync<AggregateException>(() => subject.Execute());
 
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(x=> x.Contains("Failed to handle a TestCommandHandler")));
+        logger.Received().Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("Failed to handle a TestCommandHandler")));
     }
 }

@@ -10,13 +10,11 @@ public class QueryTestWithCustomException
     [Fact]
     public async Task WhenCanNotExecuteRequest_ItShouldThrow()
     {
-        // Arrange
         var invalidRequest = new TestRequest { Id = 0 };
         var subject = new ParameterizedTestQueryWithCustomException();
 
         Task Act() => subject.Execute(invalidRequest);
 
-        // Assert
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(Act);
     }
 }

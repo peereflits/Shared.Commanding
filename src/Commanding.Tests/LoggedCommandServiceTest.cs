@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using NSubstitute.Extensions;
 using Peereflits.Shared.Commanding.Tests.Helpers;
 using Xunit;
 
@@ -40,7 +39,7 @@ public class LoggedCommandServiceTest
     [Fact]
     public async Task WhenCanExecuteRequest_ItShouldNotThrow()
     {
-        Exception result = await Record.ExceptionAsync(() => subject.Execute());
+        Exception? result = await Record.ExceptionAsync(() => subject.Execute());
 
         Assert.Null(result);
     }

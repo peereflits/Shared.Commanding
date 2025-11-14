@@ -1,6 +1,7 @@
 <Project>
 
   <PropertyGroup>
+	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ApplicationIcon>..\Solution Items\favicon.ico</ApplicationIcon>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -14,7 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package">
-    <VersionPrefix>2.0.2</VersionPrefix>
+    <VersionPrefix>3.0.3</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
