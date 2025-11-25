@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -6,43 +6,36 @@ namespace Peereflits.Shared.Commanding;
 
 public abstract class LoggedCommandService : ICommand
 {
-    private readonly string commandName ;
+    private readonly string commandName;
 
     protected LoggedCommandService(ILogger<LoggedCommandService> logger)
     {
-        Logger = logger;
+        Logger      = logger;
         commandName = GetType().Name;
     }
 
     protected ILogger<LoggedCommandService> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute() => new(true);
+    public virtual ValueTask<bool> CanExecute() => new(result: true);
 
     public async Task Execute()
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Executing a {CommandName}", commandName);
-        }
+        LogHandler.ExecutingCommand(logger: Logger, commandName: commandName);
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot execute a {CommandName}", commandName);
-            throw new CommandException(this);
+            LogHandler.CannotExecuteCommand(logger: Logger, commandName: commandName);
+            throw new CommandException(command: this);
         }
 
         try
         {
             await OnExecute();
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Executed a {CommandName}", commandName);
-            }
+            LogHandler.ExecutedCommand(logger: Logger, commandName: commandName);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName}", commandName);
+            LogHandler.FailedToExecuteCommand(logger: Logger, commandName: commandName);
             throw;
         }
     }
@@ -52,43 +45,46 @@ public abstract class LoggedCommandService : ICommand
 
 public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> where TParameters : IRequest
 {
-    private readonly string commandName ;
+    private readonly string commandName;
 
     protected LoggedCommandService(ILogger<LoggedCommandService<TParameters>> logger)
     {
-        Logger = logger;
+        Logger      = logger;
         commandName = GetType().Name;
     }
 
     protected ILogger<LoggedCommandService<TParameters>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(true);
+    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(result: true);
 
     public async Task Execute(TParameters parameters)
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Executing a {CommandName} with {@Parameters}", commandName, parameters);
-        }
+        LogHandler.ExecutingCommand(logger: Logger, commandName: commandName, parameters: parameters);
 
-        if(!await CanExecute(parameters))
+        if(!await CanExecute(parameters: parameters))
         {
-            Logger.LogWarning("Cannot execute a {CommandName} with {@Parameters}", commandName, parameters);
-            OnCommandException(parameters);
+            LogHandler.CannotExecuteCommand(
+                                            logger: Logger
+                                          , commandName: commandName
+                                          , parameters: parameters
+                                           );
+
+            OnCommandException(parameters: parameters);
         }
 
         try
         {
-            await OnExecute(parameters);
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Executed a {CommandName} with {@Parameters}", commandName, parameters);
-            }
+            await OnExecute(parameters: parameters);
+            LogHandler.ExecutedCommand(logger: Logger, commandName: commandName, parameters: parameters);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName} with {@Parameters}", commandName, parameters);
+            LogHandler.FailedToExecuteCommand(
+                                              logger: Logger
+                                            , commandName: commandName
+                                            , parameters: parameters
+                                             );
+
             throw;
         }
     }
@@ -97,6 +93,6 @@ public abstract class LoggedCommandService<TParameters> : ICommand<TParameters> 
 
     protected virtual void OnCommandException(TParameters parameters)
     {
-        throw new CommandException<TParameters>(this);
+        throw new CommandException<TParameters>(command: this);
     }
 }

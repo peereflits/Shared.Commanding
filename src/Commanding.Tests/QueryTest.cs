@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Peereflits.Shared.Commanding.Tests.Helpers;
 using Xunit;
 
 namespace Peereflits.Shared.Commanding.Tests;
 
-public class QueryTest
+public sealed class QueryTest
 {
     private readonly Query<TestRequest, bool> subject = new ParameterizedTestQuery();
 
@@ -16,7 +16,7 @@ public class QueryTest
 
         bool result = await subject1.Execute();
 
-        Assert.True(result);
+        Assert.True(condition: result);
     }
 
     [Fact]
@@ -24,9 +24,9 @@ public class QueryTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        bool result = await subject.CanExecute(invalidRequest);
+        bool result = await subject.CanExecute(parameters: invalidRequest);
 
-        Assert.False(result);
+        Assert.False(condition: result);
     }
 
     [Fact]
@@ -34,9 +34,9 @@ public class QueryTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        Task Act() => subject.Execute(invalidRequest);
+        Task Act() => subject.Execute(parameters: invalidRequest);
 
-        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(Act);
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(testCode: Act);
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public class QueryTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        bool result = await subject.CanExecute(validRequest);
+        bool result = await subject.CanExecute(parameters: validRequest);
 
-        Assert.True(result);
+        Assert.True(condition: result);
     }
 
     [Fact]
@@ -54,8 +54,8 @@ public class QueryTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(testCode: () => subject.Execute(parameters: validRequest));
 
-        Assert.Null(result);
+        Assert.Null(@object: result);
     }
 }

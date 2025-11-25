@@ -8,14 +8,13 @@
 	<PropertyGroup>
 		<IsPackable>false</IsPackable>
 		<SuppressTfmSupportBuildErrors>true</SuppressTfmSupportBuildErrors>
+		<NoWarn>$(NoWarn);CA1707;CA1711</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" />
 		<PackageReference Include="coverlet.msbuild" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net10.0' " />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net9.0' " />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Condition=" '$(TargetFramework)' == 'net8.0' " />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
 		<PackageReference Include="NSubstitute" />
 		<PackageReference Include="xunit.v3" />

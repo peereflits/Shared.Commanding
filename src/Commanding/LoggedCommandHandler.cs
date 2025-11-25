@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -10,39 +10,32 @@ public abstract class LoggedCommandHandler : ICommand
 
     protected LoggedCommandHandler(ILogger<LoggedCommandHandler> logger)
     {
-        Logger = logger;
+        Logger      = logger;
         commandName = GetType().Name;
     }
 
     protected ILogger<LoggedCommandHandler> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute() => new ValueTask<bool>(true);
+    public virtual ValueTask<bool> CanExecute() => new(result: true);
 
     public async Task Execute()
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Handling a {CommandName}", commandName);
-        }
+        LogHandler.HandlingCommand(logger: Logger, commandName: commandName);
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot handle a {CommandName}", commandName);
-            throw new CommandException(this);
+            LogHandler.CannotHandleCommand(logger: Logger, commandName: commandName);
+            throw new CommandException(command: this);
         }
 
         try
         {
             await OnExecute();
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Handled a {CommandName}", commandName);
-            }
+            LogHandler.HandledCommand(logger: Logger, commandName: commandName);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to handle a {CommandName}", commandName);
+            LogHandler.FailedToHandleCommand(logger: Logger, commandName: commandName);
             throw;
         }
     }
@@ -56,39 +49,32 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
 
     protected LoggedCommandHandler(ILogger<LoggedCommandHandler<TRequest>> logger)
     {
-        Logger = logger;
+        Logger      = logger;
         commandName = GetType().Name;
     }
 
     protected ILogger<LoggedCommandHandler<TRequest>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute(TRequest request) => new ValueTask<bool>(true);
+    public virtual ValueTask<bool> CanExecute(TRequest request) => new(result: true);
 
     public async Task Execute(TRequest request)
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
-        }
+        LogHandler.HandlingCommand(logger: Logger, commandName: commandName, request: request);
 
-        if(!await CanExecute(request))
+        if(!await CanExecute(request: request))
         {
-            Logger.LogWarning("{CommandName}: cannot handle a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
-            OnCommandException(request);
+            LogHandler.CannotHandleCommand(logger: Logger, commandName: commandName, request: request);
+            OnCommandException(request: request);
         }
 
         try
         {
-            await OnExecute(request);
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("{CommandName}: handled a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
-            }
+            await OnExecute(request: request);
+            LogHandler.HandledCommand(logger: Logger, commandName: commandName, request: request);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "{CommandName}: failed to handle a {RequestType} with {@Request}", commandName, typeof(TRequest).Name, request);
+            LogHandler.FailedToHandleCommand(logger: Logger, commandName: commandName, request: request);
             throw;
         }
     }
@@ -97,6 +83,6 @@ public abstract class LoggedCommandHandler<TRequest> : ICommand<TRequest> where 
 
     protected virtual void OnCommandException(TRequest request)
     {
-        throw new CommandException<TRequest>(this);
+        throw new CommandException<TRequest>(command: this);
     }
 }

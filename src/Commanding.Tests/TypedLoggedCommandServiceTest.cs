@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Peereflits.Shared.Commanding.Tests;
 
-public class TypedLoggedCommandServiceTest
+public sealed class TypedLoggedCommandServiceTest
 {
     private readonly MockedLogger<TypedTestCommandService> logger;
 
@@ -20,14 +20,14 @@ public class TypedLoggedCommandServiceTest
         testService = Substitute.For<ITestService>();
         testService
                .CanExecute()
-               .Returns(true);
+               .Returns(returnThis: true);
 
         logger = Substitute.For<MockedLogger<TypedTestCommandService>>();
         logger
-               .IsEnabled(Arg.Any<LogLevel>())
-               .Returns(true, true, true);
+               .IsEnabled(logLevel: Arg.Any<LogLevel>())
+               .Returns(returnThis: true, true, true);
 
-        subject = new TypedTestCommandService(testService, logger);
+        subject = new TypedTestCommandService(testService: testService, logger: logger);
     }
 
     [Fact]
@@ -35,9 +35,9 @@ public class TypedLoggedCommandServiceTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        bool result = await subject.CanExecute(invalidRequest);
+        bool result = await subject.CanExecute(request: invalidRequest);
 
-        Assert.False(result);
+        Assert.False(condition: result);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class TypedLoggedCommandServiceTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(testCode: () => subject.Execute(parameters: invalidRequest));
     }
 
     [Fact]
@@ -53,9 +53,9 @@ public class TypedLoggedCommandServiceTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        bool result = await subject.CanExecute(validRequest);
+        bool result = await subject.CanExecute(request: validRequest);
 
-        Assert.True(result);
+        Assert.True(condition: result);
     }
 
     [Fact]
@@ -63,9 +63,9 @@ public class TypedLoggedCommandServiceTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(testCode: () => subject.Execute(parameters: validRequest));
 
-        Assert.Null(result);
+        Assert.Null(@object: result);
     }
 
     [Fact]
@@ -73,17 +73,17 @@ public class TypedLoggedCommandServiceTest
     {
         testService
                .Execute()
-               .Returns(Task.CompletedTask);
+               .Returns(returnThis: Task.CompletedTask);
 
-        await subject.Execute(new TestRequest { Id = 1 });
-
-        logger
-               .Received()
-               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executing a TypedTestCommandService with")));
+        await subject.Execute(parameters: new TestRequest { Id = 1 });
 
         logger
                .Received()
-               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executed a TypedTestCommandService with")));
+               .Log(logLevel: LogLevel.Information, message: "Executing a TypedTestCommandService with TestRequest { Id = 1 }");
+
+        logger
+               .Received()
+               .Log(logLevel: LogLevel.Information, message: "Executed a TypedTestCommandService with TestRequest { Id = 1 }");
     }
 
     [Fact]
@@ -91,13 +91,13 @@ public class TypedLoggedCommandServiceTest
     {
         testService
                .CanExecute()
-               .Returns(false);
+               .Returns(returnThis: false);
 
-        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(testCode: () => subject.Execute(parameters: new TestRequest { Id = 1 }));
 
         logger
                .Received()
-               .Log(LogLevel.Warning, Arg.Is<string>(x => x.Contains("Cannot execute a TypedTestCommandService with")));
+               .Log(logLevel: LogLevel.Warning, message: "Cannot execute a TypedTestCommandService with TestRequest { Id = 1 }");
     }
 
     [Fact]
@@ -105,12 +105,15 @@ public class TypedLoggedCommandServiceTest
     {
         testService
                .Execute()
-               .Throws(new AggregateException());
+               .Throws(ex: new AggregateException());
 
-        await Assert.ThrowsAsync<AggregateException>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<AggregateException>(testCode: () => subject.Execute(parameters: new TestRequest { Id = 1 }));
 
         logger
                .Received()
-               .Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("Failed to execute a TypedTestCommandService with")));
+               .Log(
+                    logLevel: LogLevel.Error
+                  , message: "Failed to execute a TypedTestCommandService with TestRequest { Id = 1 }"
+                   );
     }
 }

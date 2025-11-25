@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -10,41 +10,34 @@ public abstract class LoggedQueryHandler<TResponse> : IQuery<TResponse>
 
     protected LoggedQueryHandler(ILogger<LoggedQueryHandler<TResponse>> logger)
     {
-        Logger = logger;
+        Logger    = logger;
         queryName = GetType().Name;
     }
 
     protected ILogger<LoggedQueryHandler<TResponse>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute() => new(true);
+    public virtual ValueTask<bool> CanExecute() => new(result: true);
 
     public async Task<TResponse> Execute()
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Handling a {CommandName}", queryName);
-        }
+        LogHandler.HandlingQuery(logger: Logger, queryName: queryName);
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot handle a {CommandName}", queryName);
+            LogHandler.CannotHandleQuery(logger: Logger, queryName: queryName);
             OnCommandException();
         }
 
         try
         {
             TResponse result = await OnExecute();
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Handled a {CommandName}", queryName);
-            }
+            LogHandler.HandledQuery(logger: Logger, queryName: queryName);
 
             return result;
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to handle a {CommandName}", queryName);
+            LogHandler.FailedToHandleQuery(logger: Logger, queryName: queryName);
             throw;
         }
     }
@@ -53,7 +46,7 @@ public abstract class LoggedQueryHandler<TResponse> : IQuery<TResponse>
 
     protected virtual void OnCommandException()
     {
-        throw new QueryException<TResponse>(this);
+        throw new QueryException<TResponse>(query: this);
     }
 }
 
@@ -63,41 +56,34 @@ public abstract class LoggedQueryHandler<TRequest, TResponse> : IQuery<TRequest,
 
     protected LoggedQueryHandler(ILogger<LoggedQueryHandler<TRequest, TResponse>> logger)
     {
-        Logger = logger;
+        Logger    = logger;
         queryName = GetType().Name;
     }
 
     protected ILogger<LoggedQueryHandler<TRequest, TResponse>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute(TRequest request) => new(true);
+    public virtual ValueTask<bool> CanExecute(TRequest request) => new(result: true);
 
     public async Task<TResponse> Execute(TRequest request)
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("{CommandName}: handling a {RequestType} with {@Request}", queryName, typeof(TRequest).Name, request);
-        }
+        LogHandler.HandlingQuery(logger: Logger, queryName: queryName, request: request);
 
-        if(!await CanExecute(request))
+        if(!await CanExecute(request: request))
         {
-            Logger.LogWarning("{CommandName}: cannot handle a {RequestType} with {@Request}", queryName, typeof(TRequest).Name, request);
-            OnCommandException(request);
+            LogHandler.CannotHandleQuery(logger: Logger, queryName: queryName, request: request);
+            OnCommandException(request: request);
         }
 
         try
         {
-            TResponse result = await OnExecute(request);
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("{CommandName}: handled a {RequestType} with {@Request}", queryName, typeof(TRequest).Name, request);
-            }
+            TResponse result = await OnExecute(request: request);
+            LogHandler.HandledQuery(logger: Logger, queryName: queryName, request: request);
 
             return result;
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "{CommandName}: failed to handle a {RequestType} with {@Request}", queryName, typeof(TRequest).Name, request);
+            LogHandler.FailedToHandleQuery(logger: Logger, queryName: queryName, request: request);
             throw;
         }
     }
@@ -106,6 +92,6 @@ public abstract class LoggedQueryHandler<TRequest, TResponse> : IQuery<TRequest,
 
     protected virtual void OnCommandException(TRequest request)
     {
-        throw new QueryException<TRequest,TResponse>(this);
+        throw new QueryException<TRequest, TResponse>(query: this);
     }
 }

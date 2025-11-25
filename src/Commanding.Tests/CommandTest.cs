@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Peereflits.Shared.Commanding.Tests.Helpers;
 using Xunit;
 
 namespace Peereflits.Shared.Commanding.Tests;
 
-public class CommandTest
+public sealed class CommandTest
 {
     private readonly TestCommand subject = new();
 
@@ -14,9 +14,9 @@ public class CommandTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        bool result = await subject.CanExecute(invalidRequest);
+        bool result = await subject.CanExecute(parameters: invalidRequest);
 
-        Assert.False(result);
+        Assert.False(condition: result);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class CommandTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        await Assert.ThrowsAsync<CommandException<TestRequest>>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<CommandException<TestRequest>>(testCode: () => subject.Execute(parameters: invalidRequest));
     }
 
     [Fact]
@@ -32,9 +32,9 @@ public class CommandTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        bool result = await subject.CanExecute(validRequest);
+        bool result = await subject.CanExecute(parameters: validRequest);
 
-        Assert.True(result);
+        Assert.True(condition: result);
     }
 
     [Fact]
@@ -42,8 +42,8 @@ public class CommandTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(testCode: () => subject.Execute(parameters: validRequest));
 
-        Assert.Null(result);
+        Assert.Null(@object: result);
     }
 }

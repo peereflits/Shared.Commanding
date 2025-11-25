@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Peereflits.Shared.Commanding.Tests;
 
-public class TypedLoggedQueryServiceTest
+public sealed class TypedLoggedQueryServiceTest
 {
     private readonly MockedLogger<TypedTestQueryService> logger;
 
@@ -20,14 +20,14 @@ public class TypedLoggedQueryServiceTest
         testService = Substitute.For<ITestService>();
         testService
                .CanExecute()
-               .Returns(true);
+               .Returns(returnThis: true);
 
         logger = Substitute.For<MockedLogger<TypedTestQueryService>>();
         logger
-               .IsEnabled(Arg.Any<LogLevel>())
-               .Returns(true, true, true);
+               .IsEnabled(logLevel: Arg.Any<LogLevel>())
+               .Returns(returnThis: true, true, true);
 
-        subject = new TypedTestQueryService(testService, logger);
+        subject = new TypedTestQueryService(testService: testService, logger: logger);
     }
 
     [Fact]
@@ -35,9 +35,9 @@ public class TypedLoggedQueryServiceTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        bool result = await subject.CanExecute(invalidRequest);
+        bool result = await subject.CanExecute(request: invalidRequest);
 
-        Assert.False(result);
+        Assert.False(condition: result);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class TypedLoggedQueryServiceTest
     {
         var invalidRequest = new TestRequest { Id = 0 };
 
-        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(() => subject.Execute(invalidRequest));
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(testCode: () => subject.Execute(parameters: invalidRequest));
     }
 
     [Fact]
@@ -53,9 +53,9 @@ public class TypedLoggedQueryServiceTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        bool result = await subject.CanExecute(validRequest);
+        bool result = await subject.CanExecute(request: validRequest);
 
-        Assert.True(result);
+        Assert.True(condition: result);
     }
 
     [Fact]
@@ -63,9 +63,9 @@ public class TypedLoggedQueryServiceTest
     {
         var validRequest = new TestRequest { Id = 1 };
 
-        Exception? result = await Record.ExceptionAsync(() => subject.Execute(validRequest));
+        Exception? result = await Record.ExceptionAsync(testCode: () => subject.Execute(parameters: validRequest));
 
-        Assert.Null(result);
+        Assert.Null(@object: result);
     }
 
     [Fact]
@@ -73,17 +73,17 @@ public class TypedLoggedQueryServiceTest
     {
         testService
                .Execute()
-               .Returns(Task.CompletedTask);
+               .Returns(returnThis: Task.CompletedTask);
 
-        await subject.Execute(new TestRequest { Id = 1 });
-
-        logger
-               .Received()
-               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executing a TypedTestQueryService with")));
+        await subject.Execute(parameters: new TestRequest { Id = 1 });
 
         logger
                .Received()
-               .Log(LogLevel.Information, Arg.Is<string>(x => x.Contains("Executed a TypedTestQueryService with")));
+               .Log(logLevel: LogLevel.Information, message: Arg.Is<string>(predicate: x => x.Contains("Executing a TypedTestQueryService with")));
+
+        logger
+               .Received()
+               .Log(logLevel: LogLevel.Information, message: Arg.Is<string>(predicate: x => x.Contains("Executed a TypedTestQueryService with")));
     }
 
     [Fact]
@@ -91,13 +91,13 @@ public class TypedLoggedQueryServiceTest
     {
         testService
                .CanExecute()
-               .Returns(false);
+               .Returns(returnThis: false);
 
-        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<QueryException<TestRequest, bool>>(testCode: () => subject.Execute(parameters: new TestRequest { Id = 1 }));
 
         logger
                .Received()
-               .Log(LogLevel.Warning, Arg.Is<string>(x => x.Contains("Cannot execute a TypedTestQueryService with")));
+               .Log(logLevel: LogLevel.Warning, message: Arg.Is<string>(predicate: x => x.Contains("Cannot execute a TypedTestQueryService with")));
     }
 
     [Fact]
@@ -105,12 +105,12 @@ public class TypedLoggedQueryServiceTest
     {
         testService
                .ExecuteWithResult<bool>()
-               .Throws(new AggregateException());
+               .Throws(ex: new AggregateException());
 
-        await Assert.ThrowsAsync<AggregateException>(() => subject.Execute(new TestRequest { Id = 1 }));
+        await Assert.ThrowsAsync<AggregateException>(testCode: () => subject.Execute(parameters: new TestRequest { Id = 1 }));
 
         logger
                .Received()
-               .Log(LogLevel.Error, Arg.Is<string>(x => x.Contains("Failed to execute a TypedTestQueryService with")));
+               .Log(logLevel: LogLevel.Error, message: Arg.Is<string>(predicate: x => x.Contains("Failed to execute a TypedTestQueryService with")));
     }
 }

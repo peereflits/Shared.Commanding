@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class TestLoggedQueryService(ITestService testService, ILogger<TestLoggedQueryService> logger) : LoggedQueryService<bool>(logger)
+internal sealed class TestLoggedQueryService
+(
+    ITestService testService
+  , ILogger<TestLoggedQueryService> logger
+) : LoggedQueryService<bool>(logger: logger)
 {
     public override ValueTask<bool> CanExecute() => testService.CanExecute();
 

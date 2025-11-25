@@ -1,0 +1,16 @@
+#==========================================================
+# Global AnalyzerConfig file of the Urantia Foundation
+#----------------------------------------------------------
+
+is_global = true
+
+# ---------------------------------------------------------
+# Configuration options for code analysis
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options
+# See also: See: %ProgramFiles%/dotnet/sdk/[version]/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_[level]_[AnalysisMode].globalconfig
+# Add overrides as needed
+# ---------------------------------------------------------
+
+# dotnet_diagnostic.ca2252.severity = error
+
+#==========================================================

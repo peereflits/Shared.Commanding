@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class ParameterizedTestQuery : Query<TestRequest, bool>
+internal sealed class ParameterizedTestQuery : Query<TestRequest, bool>
 {
-    public override ValueTask<bool> CanExecute(TestRequest parameters) => new(parameters.Id > 0);
+    public override ValueTask<bool> CanExecute(TestRequest parameters) => new(result: parameters.Id > 0);
 
-    protected override async Task<bool> OnExecute(TestRequest parameters) => await Task.FromResult(true);
+    protected override async Task<bool> OnExecute(TestRequest parameters) => await Task.FromResult(result: true);
 }

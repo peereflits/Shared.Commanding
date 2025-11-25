@@ -1,8 +1,8 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class ParameterlessTestQuery : Query<bool>
+internal sealed class ParameterlessTestQuery : Query<bool>
 {
-    protected override Task<bool> OnExecute() => Task.FromResult(true);
+    protected override Task<bool> OnExecute() => Task.FromResult(result: true);
 }

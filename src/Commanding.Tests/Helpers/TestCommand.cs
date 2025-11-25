@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Peereflits.Shared.Commanding.Tests.Helpers;
 
-internal class TestCommand : Command<TestRequest>
+internal sealed class TestCommand : Command<TestRequest>
 {
-    public override ValueTask<bool> CanExecute(TestRequest parameters) => new(parameters.Id > 0);
+    public override ValueTask<bool> CanExecute(TestRequest parameters) => new(result: parameters.Id > 0);
 
     protected override async Task OnExecute(TestRequest parameters)
     {

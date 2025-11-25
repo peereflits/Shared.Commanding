@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -10,41 +10,34 @@ public abstract class LoggedQueryService<TResult> : IQuery<TResult>
 
     protected LoggedQueryService(ILogger<LoggedQueryService<TResult>> logger)
     {
-        Logger = logger;
+        Logger    = logger;
         queryName = GetType().Name;
     }
 
     protected ILogger<LoggedQueryService<TResult>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute() => new(true);
+    public virtual ValueTask<bool> CanExecute() => new(result: true);
 
     public async Task<TResult> Execute()
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Executing a {CommandName}", queryName);
-        }
+        LogHandler.ExecutingQuery(logger: Logger, queryName: queryName);
 
         if(!await CanExecute())
         {
-            Logger.LogWarning("Cannot execute a {CommandName}", queryName);
+            LogHandler.CannotExecuteQuery(logger: Logger, queryName: queryName);
             OnCommandException();
         }
 
         try
         {
             TResult result = await OnExecute();
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Executed a {CommandName}", queryName);
-            }
+            LogHandler.ExecutedQuery(logger: Logger, queryName: queryName);
 
             return result;
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName}", queryName);
+            LogHandler.FailedToExecuteQuery(logger: Logger, queryName: queryName);
             throw;
         }
     }
@@ -53,52 +46,45 @@ public abstract class LoggedQueryService<TResult> : IQuery<TResult>
 
     protected virtual void OnCommandException()
     {
-        throw new QueryException<TResult>(this);
+        throw new QueryException<TResult>(query: this);
     }
 }
 
-public abstract class LoggedQueryService<TParameters, TResult> 
+public abstract class LoggedQueryService<TParameters, TResult>
         : IQuery<TParameters, TResult> where TParameters : IRequest
 {
     private readonly string queryName;
 
     protected LoggedQueryService(ILogger<LoggedQueryService<TParameters, TResult>> logger)
     {
-        Logger = logger;
+        Logger    = logger;
         queryName = GetType().Name;
     }
 
     protected ILogger<LoggedQueryService<TParameters, TResult>> Logger { get; }
 
-    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(true);
+    public virtual ValueTask<bool> CanExecute(TParameters parameters) => new(result: true);
 
     public async Task<TResult> Execute(TParameters parameters)
     {
-        if (Logger.IsEnabled(LogLevel.Information))
-        {
-            Logger.LogInformation("Executing a {CommandName} with {@Parameters}", queryName, parameters);
-        }
+        LogHandler.ExecutingQuery(logger: Logger, queryName: queryName, request: parameters);
 
-        if(!await CanExecute(parameters))
+        if(!await CanExecute(parameters: parameters))
         {
-            Logger.LogWarning("Cannot execute a {CommandName} with {@Parameters}", queryName, parameters);
-            OnCommandException(parameters);
+            LogHandler.CannotExecuteQuery(logger: Logger, queryName: queryName, request: parameters);
+            OnCommandException(parameters: parameters);
         }
 
         try
         {
-            TResult result = await OnExecute(parameters);
-
-            if(Logger.IsEnabled(LogLevel.Information))
-            {
-                Logger.LogInformation("Executed a {CommandName} with {@Parameters}", queryName, parameters);
-            }
+            TResult result = await OnExecute(parameters: parameters);
+            LogHandler.ExecutedQuery(logger: Logger, queryName: queryName, request: parameters);
 
             return result;
         }
-        catch(Exception ex)
+        catch(Exception)
         {
-            Logger.LogError(ex, "Failed to execute a {CommandName} with {@Parameters}", queryName, parameters);
+            LogHandler.FailedToExecuteQuery(logger: Logger, queryName: queryName, request: parameters);
             throw;
         }
     }
@@ -107,6 +93,6 @@ public abstract class LoggedQueryService<TParameters, TResult>
 
     protected virtual void OnCommandException(TParameters parameters)
     {
-        throw new QueryException<TParameters, TResult>(this);
+        throw new QueryException<TParameters, TResult>(query: this);
     }
 }
