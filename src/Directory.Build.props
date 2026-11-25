@@ -15,7 +15,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Label="Package">
-		<VersionPrefix>3.0.4</VersionPrefix>
+		<VersionPrefix>4.0.4</VersionPrefix>
 	</PropertyGroup>
 
 	<PropertyGroup>
